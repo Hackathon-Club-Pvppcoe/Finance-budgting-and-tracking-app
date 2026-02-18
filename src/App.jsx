@@ -11,7 +11,7 @@ function App() {
   return (
     <MantineProvider>
     <>
-     <h1>welcome to our repository</h1>
+     <h1>welcome to our repository boy</h1>
     </>
     </MantineProvider>
   )
