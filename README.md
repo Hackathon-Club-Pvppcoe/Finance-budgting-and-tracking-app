@@ -1,16 +1,111 @@
-# React + Vite
+# Monthly Expense Tracker (MERN)
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Full-stack monthly expense tracking application with:
+- React + Tailwind CSS frontend
+- Node.js + Express + MongoDB backend
+- JWT authentication and bcrypt password hashing
+- Protected, user-private categories and expenses
+- Dashboard + monthly reports with chart visualizations
 
-Currently, two official plugins are available:
+## Project Structure
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+```text
+Finance-budgting-and-tracking-app/
+  backend/
+    src/
+      config/
+      controllers/
+      middleware/
+      models/
+      routes/
+      utils/
+  frontend/
+    src/
+      api/
+      components/
+      context/
+      pages/
+```
 
-## React Compiler
+## Features
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+- Auth: Register, Login, Protected routes (`JWT`)
+- Categories:
+  - Default categories: Food, Household, Medicines, Rent, Bills, Travel, Education, Others
+  - Add custom categories
+  - Default categories cannot be deleted
+- Expenses:
+  - Add, view, edit, delete expense entries
+  - Fields: amount, category, date, optional note
+- Dashboard:
+  - Total monthly spending
+  - Category-wise breakdown
+  - Spending trend bar chart
+  - Highest spending category highlight
+- Reports:
+  - Month selector
+  - Category report and 6-month trend
 
-## Expanding the ESLint configuration
+## Backend Setup
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+1. Open terminal:
+```bash
+cd backend
+```
+2. Install dependencies:
+```bash
+npm install
+```
+3. Configure env:
+```bash
+cp .env.example .env
+```
+Set values in `.env`:
+- `PORT=5000`
+- `MONGO_URI=...`
+- `JWT_SECRET=...`
+4. Run backend:
+```bash
+npm run dev
+```
+
+## Frontend Setup
+
+1. Open second terminal:
+```bash
+cd frontend
+```
+2. Install dependencies:
+```bash
+npm install
+```
+3. Configure env:
+```bash
+cp .env.example .env
+```
+4. Run frontend:
+```bash
+npm run dev
+```
+
+Frontend default URL: `http://localhost:5173`  
+Backend default URL: `http://localhost:5000`
+
+## API Endpoints
+
+- Auth:
+  - `POST /api/auth/register`
+  - `POST /api/auth/login`
+  - `GET /api/auth/me`
+- Categories:
+  - `GET /api/categories`
+  - `POST /api/categories`
+  - `PUT /api/categories/:id`
+  - `DELETE /api/categories/:id`
+- Expenses:
+  - `GET /api/expenses?month=MM&year=YYYY`
+  - `POST /api/expenses`
+  - `PUT /api/expenses/:id`
+  - `DELETE /api/expenses/:id`
+- Reports:
+  - `GET /api/reports/monthly?month=MM&year=YYYY`
