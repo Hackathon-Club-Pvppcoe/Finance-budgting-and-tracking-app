@@ -29,10 +29,10 @@ const CategoriesPage = () => {
     event.preventDefault();
     setError("");
     try {
-      await apiRequest("/categories", { 
-        method: "POST", 
-        token, 
-        data: { name, monthlyBudget: Number(budget) || 0 } 
+      await apiRequest("/categories", {
+        method: "POST",
+        token,
+        data: { name, monthlyBudget: budget === "" ? 1000 : Number(budget) }
       });
       setName("");
       setBudget("");
@@ -58,9 +58,9 @@ const CategoriesPage = () => {
       await apiRequest(`/categories/${id}`, {
         method: "PUT",
         token,
-        data: { 
-          name: editingName, 
-          monthlyBudget: Number(editingBudget) || 0 
+        data: {
+          name: editingName,
+          monthlyBudget: editingBudget === "" ? 1000 : Number(editingBudget)
         },
       });
       setEditingId("");
@@ -93,7 +93,7 @@ const CategoriesPage = () => {
           type="number"
           value={budget}
           onChange={(e) => setBudget(e.target.value)}
-          placeholder="Budget (₹)"
+          placeholder="Budget (Default: ₹1000)"
           className="w-32 rounded-lg border border-slate-300 px-3 py-2 focus:border-sky-400 focus:outline-none"
         />
         <button className="rounded-lg bg-sky-600 px-4 py-2 text-sm font-medium text-white hover:bg-sky-500">
@@ -119,9 +119,8 @@ const CategoriesPage = () => {
                   <p className="truncate font-medium">{category.name}</p>
                 )}
                 <span
-                  className={`shrink-0 rounded-full px-2 py-0.5 text-xs ${
-                    category.isDefault ? "bg-amber-100 text-amber-800" : "bg-emerald-100 text-emerald-800"
-                  }`}
+                  className={`shrink-0 rounded-full px-2 py-0.5 text-xs ${category.isDefault ? "bg-amber-100 text-amber-800" : "bg-emerald-100 text-emerald-800"
+                    }`}
                 >
                   {category.isDefault ? "Default" : "Custom"}
                 </span>
@@ -138,7 +137,7 @@ const CategoriesPage = () => {
                   />
                 ) : (
                   <span className="text-sm font-semibold text-sky-700">
-                    ₹{category.monthlyBudget || 0}
+                    ₹{category.monthlyBudget || 1000}
                   </span>
                 )}
               </div>

@@ -105,11 +105,11 @@ const DashboardPage = () => {
             <ResponsiveContainer>
               <PieChart>
                 <Pie
-                   data={summary?.byCategory || []}
-                   dataKey="total"
-                   nameKey="name"
-                   outerRadius={95}
-                   label
+                  data={summary?.byCategory || []}
+                  dataKey="total"
+                  nameKey="name"
+                  outerRadius={95}
+                  label
                 >
                   {(summary?.byCategory || []).map((entry, index) => (
                     <Cell key={entry.name} fill={pieColors[index % pieColors.length]} />
@@ -124,27 +124,26 @@ const DashboardPage = () => {
         <article className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
           <h3 className="mb-3 text-sm font-semibold text-slate-700">Budget Status</h3>
           <div className="space-y-4 max-h-72 overflow-y-auto pr-2">
-            {(summary?.byCategory || []).filter(c => (c.budget || 0) > 0).length === 0 ? (
+            {(summary?.byCategory || []).length === 0 ? (
               <p className="text-sm text-slate-400 text-center py-10">No category budgets set.</p>
             ) : (
               (summary?.byCategory || [])
-                .filter(c => (c.budget || 0) > 0)
                 .map((cat) => {
-                  const percent = Math.min((cat.total / cat.budget) * 100, 100);
-                  const isOver = cat.total > cat.budget;
+                  const catBudget = cat.budget || 1000;
+                  const percent = Math.min((cat.total / catBudget) * 100, 100);
+                  const isOver = cat.total > catBudget;
                   return (
                     <div key={cat.categoryId}>
                       <div className="mb-1 flex justify-between text-xs font-medium">
                         <span>{cat.name}</span>
                         <span className={isOver ? "text-rose-600" : "text-slate-600"}>
-                          {currency(cat.total)} / {currency(cat.budget)}
+                          {currency(cat.total)} / {currency(catBudget)}
                         </span>
                       </div>
                       <div className="h-2 w-full rounded-full bg-slate-100">
                         <div
-                          className={`h-2 rounded-full transition-all duration-500 ${
-                            isOver ? "bg-rose-500" : percent > 80 ? "bg-amber-500" : "bg-sky-500"
-                          }`}
+                          className={`h-2 rounded-full transition-all duration-500 ${isOver ? "bg-rose-500" : percent > 80 ? "bg-amber-500" : "bg-sky-500"
+                            }`}
                           style={{ width: `${percent}%` }}
                         ></div>
                       </div>

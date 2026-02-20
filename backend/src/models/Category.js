@@ -18,7 +18,7 @@ const categorySchema = new mongoose.Schema(
     },
     monthlyBudget: {
       type: Number,
-      default: 0,
+      default: 1000,
       min: 0,
     },
   },
