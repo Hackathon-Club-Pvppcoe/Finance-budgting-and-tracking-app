@@ -20,11 +20,16 @@ const findAllowedCategory = (userId, categoryId) =>
 
 const checkAndNotifyBudget = async (user, categoryId, date) => {
   try {
+    console.log(`[Budget] Starting check for ${user.email}, CatID: ${categoryId}`);
     const category = await Category.findById(categoryId);
-    if (!category || !category.monthlyBudget || category.monthlyBudget <= 0) return;
+    if (!category) { console.log("[Budget] Category not found"); return; }
+    if (!category.monthlyBudget || category.monthlyBudget <= 0) { console.log("[Budget] No budget set for this category"); return; }
 
-    const start = new Date(new Date(date).getFullYear(), new Date(date).getMonth(), 1);
-    const end = new Date(new Date(date).getFullYear(), new Date(date).getMonth() + 1, 1);
+    const inputDate = new Date(date);
+    const start = new Date(inputDate.getFullYear(), inputDate.getMonth(), 1);
+    const end = new Date(inputDate.getFullYear(), inputDate.getMonth() + 1, 1);
+    
+    console.log(`[Budget] Range: ${start.toISOString()} to ${end.toISOString()}`);
 
     const totalRes = await Expense.aggregate([
       {
@@ -44,9 +49,11 @@ const checkAndNotifyBudget = async (user, categoryId, date) => {
 
     const totalSpent = totalRes[0]?.total || 0;
     const percentage = totalSpent / category.monthlyBudget;
+    
+    console.log(`[Budget] Result - Name: ${category.name}, Spent: ${totalSpent}, Budget: ${category.monthlyBudget}, %: ${percentage}`);
 
     if (percentage > 1) {
-      // Exceeded 100%
+      console.log("[Budget] Threshold: Exceeded 100%");
       await sendBudgetAlert(
         user.email,
         user.name,
@@ -56,7 +63,7 @@ const checkAndNotifyBudget = async (user, categoryId, date) => {
         "exceeded"
       );
     } else if (percentage >= 0.9) {
-      // Reached 90%
+      console.log("[Budget] Threshold: Reached 90%");
       await sendBudgetAlert(
         user.email,
         user.name,
@@ -65,9 +72,11 @@ const checkAndNotifyBudget = async (user, categoryId, date) => {
         category.monthlyBudget,
         "warning"
       );
+    } else {
+      console.log("[Budget] Threshold: Not reached");
     }
   } catch (err) {
-    console.error("Budget check failed:", err.message);
+    console.error("[Budget] CRITICAL ERROR:", err.message);
   }
 };
 

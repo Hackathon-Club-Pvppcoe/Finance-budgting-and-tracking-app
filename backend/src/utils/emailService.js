@@ -3,6 +3,8 @@ import dotenv from "dotenv";
 
 dotenv.config();
 
+console.log(`[EmailService] Init - User: ${process.env.EMAIL_USER}, Pass Length: ${process.env.EMAIL_PASS?.length || 0}`);
+
 const transporter = nodemailer.createTransport({
   service: "gmail",
   auth: {
