@@ -43,14 +43,27 @@ const checkAndNotifyBudget = async (user, categoryId, date) => {
     ]);
 
     const totalSpent = totalRes[0]?.total || 0;
+    const percentage = totalSpent / category.monthlyBudget;
 
-    if (totalSpent > category.monthlyBudget) {
+    if (percentage > 1) {
+      // Exceeded 100%
       await sendBudgetAlert(
         user.email,
         user.name,
         category.name,
         totalSpent,
-        category.monthlyBudget
+        category.monthlyBudget,
+        "exceeded"
+      );
+    } else if (percentage >= 0.9) {
+      // Reached 90%
+      await sendBudgetAlert(
+        user.email,
+        user.name,
+        category.name,
+        totalSpent,
+        category.monthlyBudget,
+        "warning"
       );
     }
   } catch (err) {
