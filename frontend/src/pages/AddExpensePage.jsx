@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { Box, Typography, Paper } from "@mui/material";
 import ExpenseForm from "../components/ExpenseForm";
 import { apiRequest } from "../api/client";
 import { useAuth } from "../context/AuthContext";
@@ -37,14 +38,26 @@ const AddExpensePage = () => {
   };
 
   return (
-    <section className="space-y-4 rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
-      <div>
-        <h2 className="text-2xl font-semibold">Add Expense</h2>
-        <p className="text-sm text-slate-500">Record a new spending entry for your monthly tracker.</p>
-      </div>
-      {error ? <p className="rounded-lg bg-rose-50 p-3 text-sm text-rose-700">{error}</p> : null}
-      <ExpenseForm categories={categories} submitLabel="Add Expense" onSubmit={handleCreate} />
-    </section>
+    <Box sx={{ p: 4, maxWidth: 600, mx: 'auto' }}>
+      <Box sx={{ mb: 4 }}>
+        <Typography variant="h4" fontWeight="bold" gutterBottom>
+          Add Expense
+        </Typography>
+        <Typography variant="body2" color="text.secondary">
+          Record a new spending entry for your financial tracking.
+        </Typography>
+      </Box>
+
+      {error && (
+        <Paper sx={{ p: 2, mb: 3, bgcolor: 'error.light', color: 'error.contrastText' }}>
+          {error}
+        </Paper>
+      )}
+
+      <Paper sx={{ p: 4, borderRadius: 3, boxShadow: 3 }}>
+        <ExpenseForm categories={categories} submitLabel="Add Expense" onSubmit={handleCreate} />
+      </Paper>
+    </Box>
   );
 };
 

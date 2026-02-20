@@ -1,4 +1,16 @@
 import { useCallback, useEffect, useState } from "react";
+import {
+  Box,
+  Typography,
+  TextField,
+  Button,
+  Card,
+  Chip,
+  IconButton,
+  Paper,
+  Divider
+} from "@mui/material";
+import { Edit as EditIcon, Delete as DeleteIcon, Save as SaveIcon, Category as CategoryIcon } from "@mui/icons-material";
 import { apiRequest } from "../api/client";
 import { useAuth } from "../context/AuthContext";
 
@@ -73,113 +85,135 @@ const CategoriesPage = () => {
   };
 
   return (
-    <section className="space-y-4 rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
-      <div>
-        <h2 className="text-2xl font-semibold">Category Management</h2>
-        <p className="text-sm text-slate-500">Default categories are protected; add your own custom categories.</p>
-      </div>
+    <Box sx={{ p: 4, maxWidth: 800, mx: 'auto' }}>
+      <Box sx={{ mb: 4 }}>
+        <Typography variant="h4" fontWeight="bold" gutterBottom>
+          Category Management
+        </Typography>
+        <Typography variant="body2" color="text.secondary">
+          Configure your spending categories and monthly budgets.
+        </Typography>
+      </Box>
 
-      {error ? <p className="rounded-lg bg-rose-50 p-3 text-sm text-rose-700">{error}</p> : null}
+      {error && (
+        <Paper sx={{ p: 2, mb: 3, bgcolor: 'error.light', color: 'error.contrastText' }}>
+          {error}
+        </Paper>
+      )}
 
-      <form onSubmit={handleCreate} className="flex flex-wrap gap-2">
-        <input
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-          required
-          placeholder="New category name"
-          className="min-w-52 flex-1 rounded-lg border border-slate-300 px-3 py-2 focus:border-sky-400 focus:outline-none"
-        />
-        <input
-          type="number"
-          value={budget}
-          onChange={(e) => setBudget(e.target.value)}
-          placeholder="Budget (Default: ₹1000)"
-          className="w-32 rounded-lg border border-slate-300 px-3 py-2 focus:border-sky-400 focus:outline-none"
-        />
-        <button className="rounded-lg bg-sky-600 px-4 py-2 text-sm font-medium text-white hover:bg-sky-500">
-          Add Category
-        </button>
-      </form>
+      <Card sx={{ p: 3, mb: 4, borderRadius: 3, boxShadow: 2 }}>
+        <Typography variant="h6" sx={{ mb: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
+          <CategoryIcon color="primary" /> Add New Category
+        </Typography>
+        <form onSubmit={handleCreate}>
+          <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
+            <TextField
+              size="small"
+              label="Category Name"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              required
+              sx={{ flex: 2, minWidth: 200 }}
+            />
+            <TextField
+              size="small"
+              type="number"
+              label="Monthly Budget (Default ₹1000)"
+              value={budget}
+              onChange={(e) => setBudget(e.target.value)}
+              sx={{ flex: 1, minWidth: 150 }}
+            />
+            <Button
+              type="submit"
+              variant="contained"
+              disableElevation
+              sx={{ borderRadius: 2, px: 3 }}
+            >
+              Add
+            </Button>
+          </Box>
+        </form>
+      </Card>
 
-      <div className="space-y-2">
+      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
         {categories.map((category) => (
-          <article
+          <Card
             key={category._id}
-            className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-slate-200 px-3 py-2"
+            sx={{
+              p: 2,
+              borderRadius: 2,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              transition: '0.2s',
+              '&:hover': { boxShadow: 4 }
+            }}
           >
-            <div className="flex flex-1 items-center gap-4">
-              <div className="flex min-w-0 flex-1 items-center gap-2">
-                {editingId === category._id ? (
-                  <input
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, flex: 1 }}>
+              {editingId === category._id ? (
+                <Box sx={{ display: 'flex', gap: 1, flex: 1 }}>
+                  <TextField
+                    size="small"
                     value={editingName}
                     onChange={(e) => setEditingName(e.target.value)}
-                    className="w-full rounded border border-slate-300 px-2 py-1 text-sm"
+                    sx={{ flex: 1 }}
                   />
-                ) : (
-                  <p className="truncate font-medium">{category.name}</p>
-                )}
-                <span
-                  className={`shrink-0 rounded-full px-2 py-0.5 text-xs ${category.isDefault ? "bg-amber-100 text-amber-800" : "bg-emerald-100 text-emerald-800"
-                    }`}
-                >
-                  {category.isDefault ? "Default" : "Custom"}
-                </span>
-              </div>
-
-              <div className="flex shrink-0 items-center gap-2">
-                <span className="text-xs text-slate-400">Budget:</span>
-                {editingId === category._id ? (
-                  <input
+                  <TextField
+                    size="small"
                     type="number"
                     value={editingBudget}
                     onChange={(e) => setEditingBudget(e.target.value)}
-                    className="w-20 rounded border border-slate-300 px-2 py-1 text-sm"
+                    sx={{ width: 120 }}
                   />
-                ) : (
-                  <span className="text-sm font-semibold text-sky-700">
-                    ₹{category.monthlyBudget || 1000}
-                  </span>
-                )}
-              </div>
-            </div>
+                </Box>
+              ) : (
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                  <Typography variant="subtitle1" fontWeight="600">
+                    {category.name}
+                  </Typography>
+                  <Chip
+                    label={category.isDefault ? "System" : "Custom"}
+                    size="small"
+                    color={category.isDefault ? "warning" : "success"}
+                    variant="outlined"
+                  />
+                  <Typography variant="body2" color="primary.main" fontWeight="bold">
+                    Budget: ₹{category.monthlyBudget || 1000}
+                  </Typography>
+                </Box>
+              )}
+            </Box>
 
-            <div className="flex gap-2">
+            <Box sx={{ display: 'flex', gap: 1 }}>
               {!category.isDefault ? (
                 <>
                   {editingId === category._id ? (
-                    <button
-                      onClick={() => handleUpdate(category._id)}
-                      className="rounded-md border border-slate-300 px-3 py-1 text-xs font-medium hover:bg-slate-100"
-                    >
-                      Save
-                    </button>
+                    <IconButton color="primary" onClick={() => handleUpdate(category._id)}>
+                      <SaveIcon />
+                    </IconButton>
                   ) : (
-                    <button
-                      onClick={() => {
-                        setEditingId(category._id);
-                        setEditingName(category.name);
-                        setEditingBudget(category.monthlyBudget || "");
-                      }}
-                      className="rounded-md border border-slate-300 px-3 py-1 text-xs font-medium hover:bg-slate-100"
-                    >
-                      Edit
-                    </button>
+                    <IconButton color="info" onClick={() => {
+                      setEditingId(category._id);
+                      setEditingName(category.name);
+                      setEditingBudget(category.monthlyBudget || "");
+                    }}>
+                      <EditIcon />
+                    </IconButton>
                   )}
-                  <button
-                    onClick={() => handleDelete(category._id)}
-                    className="rounded-md bg-rose-600 px-3 py-1 text-xs font-medium text-white hover:bg-rose-500"
-                  >
-                    Delete
-                  </button>
+                  <IconButton color="error" onClick={() => handleDelete(category._id)}>
+                    <DeleteIcon />
+                  </IconButton>
                 </>
               ) : (
-                <span className="text-xs text-slate-400">Protected</span>
+                <Typography variant="caption" color="text.disabled" sx={{ fontStyle: 'italic' }}>
+                  Protected
+                </Typography>
               )}
-            </div>
-          </article>
+            </Box>
+          </Card>
         ))}
-      </div>
-    </section>
+      </Box>
+    </Box>
   );
 };
 

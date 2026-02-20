@@ -1,4 +1,14 @@
 import { useEffect, useState } from "react";
+import {
+  Box,
+  TextField,
+  MenuItem,
+  Button,
+  Grid,
+  FormControl,
+  InputLabel,
+  Select
+} from "@mui/material";
 
 const toInputDate = (value) => new Date(value).toISOString().slice(0, 10);
 
@@ -36,83 +46,87 @@ const ExpenseForm = ({ categories, initialValues, onSubmit, submitLabel, onCance
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
-      <div className="grid gap-4 md:grid-cols-2">
-        <label className="space-y-1 text-sm text-slate-700">
-          Amount (₹)
-          <input
+    <Box component="form" onSubmit={handleSubmit} sx={{ mt: 2 }}>
+      <Grid container spacing={2}>
+        <Grid item xs={12} md={6}>
+          <TextField
+            fullWidth
+            label="Amount (₹)"
             type="number"
-            step="0.01"
-            min="0.01"
             name="amount"
             required
             value={form.amount}
             onChange={handleChange}
-            className="w-full rounded-lg border border-slate-300 px-3 py-2 focus:border-sky-400 focus:outline-none"
+            inputProps={{ step: "0.01", min: "0.01" }}
           />
-        </label>
-
-        <label className="space-y-1 text-sm text-slate-700">
-          Category
-          <select
-            name="categoryId"
+        </Grid>
+        <Grid item xs={12} md={6}>
+          <FormControl fullWidth required>
+            <InputLabel>Category</InputLabel>
+            <Select
+              name="categoryId"
+              value={form.categoryId}
+              label="Category"
+              onChange={handleChange}
+            >
+              <MenuItem value=""><em>Select Category</em></MenuItem>
+              {categories.map((category) => (
+                <MenuItem key={category._id} value={category._id}>
+                  {category.name}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+        </Grid>
+        <Grid item xs={12}>
+          <TextField
+            fullWidth
+            label="Date"
+            type="date"
+            name="date"
             required
-            value={form.categoryId}
+            value={form.date}
             onChange={handleChange}
-            className="w-full rounded-lg border border-slate-300 px-3 py-2 focus:border-sky-400 focus:outline-none"
-          >
-            <option value="">Select a category</option>
-            {categories.map((category) => (
-              <option key={category._id} value={category._id}>
-                {category.name}
-              </option>
-            ))}
-          </select>
-        </label>
-      </div>
-
-      <label className="space-y-1 text-sm text-slate-700">
-        Date
-        <input
-          type="date"
-          name="date"
-          required
-          value={form.date}
-          onChange={handleChange}
-          className="w-full rounded-lg border border-slate-300 px-3 py-2 focus:border-sky-400 focus:outline-none"
-        />
-      </label>
-
-      <label className="space-y-1 text-sm text-slate-700">
-        Note (optional)
-        <textarea
-          name="note"
-          value={form.note}
-          onChange={handleChange}
-          rows={3}
-          placeholder="Add a quick note..."
-          className="w-full rounded-lg border border-slate-300 px-3 py-2 focus:border-sky-400 focus:outline-none"
-        />
-      </label>
-
-      <div className="flex flex-wrap gap-2">
-        <button
-          type="submit"
-          className="rounded-lg bg-sky-600 px-4 py-2 text-sm font-medium text-white hover:bg-sky-500"
-        >
-          {submitLabel}
-        </button>
-        {onCancel ? (
-          <button
-            type="button"
-            onClick={onCancel}
-            className="rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-100"
-          >
-            Cancel
-          </button>
-        ) : null}
-      </div>
-    </form>
+            InputLabelProps={{ shrink: true }}
+          />
+        </Grid>
+        <Grid item xs={12}>
+          <TextField
+            fullWidth
+            label="Note (optional)"
+            name="note"
+            multiline
+            rows={3}
+            value={form.note}
+            onChange={handleChange}
+            placeholder="Add a quick note..."
+          />
+        </Grid>
+        <Grid item xs={12}>
+          <Box sx={{ display: 'flex', gap: 2, mt: 1 }}>
+            <Button
+              type="submit"
+              variant="contained"
+              color="primary"
+              sx={{ px: 4, borderRadius: 2 }}
+              disableElevation
+            >
+              {submitLabel}
+            </Button>
+            {onCancel && (
+              <Button
+                variant="outlined"
+                color="secondary"
+                onClick={onCancel}
+                sx={{ borderRadius: 2 }}
+              >
+                Cancel
+              </Button>
+            )}
+          </Box>
+        </Grid>
+      </Grid>
+    </Box>
   );
 };
 

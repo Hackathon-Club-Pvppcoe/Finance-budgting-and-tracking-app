@@ -1,20 +1,30 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import {
-  Bar,
-  BarChart,
-  CartesianGrid,
-  Cell,
-  Pie,
-  PieChart,
-  ResponsiveContainer,
-  Tooltip,
-  XAxis,
-  YAxis,
-} from "recharts";
+import { PieChart, pieArcLabelClasses } from "@mui/x-charts/PieChart";
+import { LineChart } from "@mui/x-charts/LineChart";
+import { useDrawingArea } from "@mui/x-charts/hooks";
+import { styled } from "@mui/material/styles";
+import { Box, Typography, ToggleButton, ToggleButtonGroup } from "@mui/material";
 import { apiRequest } from "../api/client";
 import { useAuth } from "../context/AuthContext";
 import StatCard from "../components/StatCard";
 import ExpenseForm from "../components/ExpenseForm";
+
+const StyledText = styled("text")(({ theme }) => ({
+  fill: theme.palette.text.primary,
+  textAnchor: "middle",
+  dominantBaseline: "central",
+  fontSize: 18,
+  fontWeight: "bold",
+}));
+
+function PieCenterLabel({ children }) {
+  const { width, height, left, top } = useDrawingArea();
+  return (
+    <StyledText x={left + width / 2} y={top + height / 2}>
+      {children}
+    </StyledText>
+  );
+}
 
 const monthYear = () => {
   const now = new Date();
@@ -30,6 +40,7 @@ const DashboardPage = () => {
   const [categories, setCategories] = useState([]);
   const [error, setError] = useState("");
   const [editing, setEditing] = useState(null);
+  const [pieView, setPieView] = useState("category");
   const { month, year } = useMemo(monthYear, []);
 
   const loadData = useCallback(async () => {
@@ -77,6 +88,62 @@ const DashboardPage = () => {
 
   const pieColors = ["#0ea5e9", "#22c55e", "#f59e0b", "#f43f5e", "#a855f7", "#64748b"];
 
+  const trendData = summary?.trend || [];
+  const categorySummary = summary?.byCategory || [];
+  const totalSpend = summary?.total || 0;
+
+  // MUI Pie Data Preparation
+  const classData = categorySummary.map((cat, idx) => ({
+    id: cat.categoryId,
+    label: cat.name,
+    value: cat.total,
+    color: pieColors[idx % pieColors.length],
+    percentage: totalSpend > 0 ? (cat.total / totalSpend) * 100 : 0,
+  }));
+
+  const classStatusData = categorySummary.flatMap((cat, idx) => {
+    const baseColor = pieColors[idx % pieColors.length];
+    const budget = cat.budget || 1000;
+    const isOver = cat.total > budget;
+
+    // Split the category's pie slice into 'Spent' and 'Remaining' or 'Over'
+    return [
+      {
+        id: `${cat.categoryId}-spent`,
+        label: isOver ? "Over" : "Under",
+        value: cat.total,
+        color: isOver ? "#f43f5e" : baseColor,
+        percentage: (cat.total / totalSpend) * 100,
+      }
+    ];
+  });
+
+  const statusData = [
+    {
+      id: "Under",
+      label: "Under Budget",
+      value: categorySummary.filter(c => c.total <= (c.budget || 1000)).reduce((sum, c) => sum + c.total, 0),
+      color: "#22c55e",
+    },
+    {
+      id: "Over",
+      label: "Over Budget",
+      value: categorySummary.filter(c => c.total > (c.budget || 1000)).reduce((sum, c) => sum + c.total, 0),
+      color: "#f43f5e",
+    }
+  ];
+
+  const statusCategoryData = categorySummary.map(cat => {
+    const isOver = cat.total > (cat.budget || 1000);
+    return {
+      id: `${cat.categoryId}-status`,
+      label: cat.name,
+      value: cat.total,
+      color: isOver ? "#f43f5e" : "#22c55e",
+      opacity: 0.8
+    };
+  });
+
   return (
     <section className="space-y-6">
       <div>
@@ -99,28 +166,69 @@ const DashboardPage = () => {
       </div>
 
       <div className="grid gap-4 lg:grid-cols-2">
-        <article className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
-          <h3 className="mb-3 text-sm font-semibold text-slate-700">Category Breakdown</h3>
-          <div className="h-72">
-            <ResponsiveContainer>
-              <PieChart>
-                <Pie
-                  data={summary?.byCategory || []}
-                  dataKey="total"
-                  nameKey="name"
-                  outerRadius={95}
-                  label
-                >
-                  {(summary?.byCategory || []).map((entry, index) => (
-                    <Cell key={entry.name} fill={pieColors[index % pieColors.length]} />
-                  ))}
-                </Pie>
-                <Tooltip formatter={(value) => currency(value)} />
+        <article className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm flex flex-col items-center">
+          <div className="w-full flex justify-between items-center mb-4">
+            <h3 className="text-sm font-semibold text-slate-700">Category Breakdown</h3>
+            <ToggleButtonGroup
+              size="small"
+              value={pieView}
+              exclusive
+              onChange={(e, v) => v && setPieView(v)}
+              color="primary"
+            >
+              <ToggleButton value="category">By Category</ToggleButton>
+              <ToggleButton value="status">By Budget</ToggleButton>
+            </ToggleButtonGroup>
+          </div>
+
+          <div className="h-80 w-full flex justify-center">
+            {pieView === "category" ? (
+              <PieChart
+                series={[
+                  {
+                    innerRadius: 60,
+                    outerRadius: 110,
+                    data: classData,
+                    paddingAngle: 2,
+                    cornerRadius: 4,
+                    highlightScope: { fade: 'global', highlight: 'item' },
+                  }
+                ]}
+                slotProps={{ legend: { hidden: true } }}
+                sx={{
+                  [`& .${pieArcLabelClasses.root}`]: {
+                    display: 'none',
+                  },
+                }}
+                margin={{ top: 0, bottom: 0, left: 0, right: 0 }}
+              >
+                <PieCenterLabel>Spent</PieCenterLabel>
               </PieChart>
-            </ResponsiveContainer>
+            ) : (
+              <PieChart
+                series={[
+                  {
+                    innerRadius: 60,
+                    outerRadius: 110,
+                    data: statusData,
+                    paddingAngle: 2,
+                    cornerRadius: 4,
+                    highlightScope: { fade: 'global', highlight: 'item' },
+                  }
+                ]}
+                slotProps={{ legend: { hidden: true } }}
+                sx={{
+                  [`& .${pieArcLabelClasses.root}`]: {
+                    display: 'none',
+                  },
+                }}
+                margin={{ top: 0, bottom: 0, left: 0, right: 0 }}
+              >
+                <PieCenterLabel>Budget</PieCenterLabel>
+              </PieChart>
+            )}
           </div>
         </article>
-
         <article className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
           <h3 className="mb-3 text-sm font-semibold text-slate-700">Budget Status</h3>
           <div className="space-y-4 max-h-72 overflow-y-auto pr-2">
@@ -153,19 +261,24 @@ const DashboardPage = () => {
             )}
           </div>
         </article>
-
         <article className="lg:col-span-2 rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
           <h3 className="mb-3 text-sm font-semibold text-slate-700">Spending Trends (6 Months)</h3>
-          <div className="h-72">
-            <ResponsiveContainer>
-              <BarChart data={summary?.trend || []}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="label" />
-                <YAxis />
-                <Tooltip formatter={(value) => currency(value)} />
-                <Bar dataKey="total" fill="#0284c7" radius={[6, 6, 0, 0]} />
-              </BarChart>
-            </ResponsiveContainer>
+          <div className="h-[300px] w-full">
+            <LineChart
+              xAxis={[{
+                data: trendData.map(d => d.label),
+                scaleType: 'band'
+              }]}
+              series={[
+                {
+                  data: trendData.map(d => d.total),
+                  area: true,
+                  color: '#0284c7'
+                },
+              ]}
+              height={300}
+              margin={{ left: 60, right: 20, top: 20, bottom: 30 }}
+            />
           </div>
         </article>
       </div>
